@@ -23,14 +23,24 @@
 class GIU_Activator {
 
 	/**
-	 * Short Description. (use period)
-	 *
-	 * Long Description.
 	 *
 	 * @since    1.0.0
 	 */
 	public static function activate() {
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'plugin_giu';
+		$charset_collate = $wpdb->get_charset_collate();
 
+		$sql = "CREATE TABLE $table_name (
+			id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+			name varchar(20) DEFAULT NULL,
+			source varchar(20) DEFAULT NULL,
+			version varchar(20) DEFAULT NULL,
+			PRIMARY KEY  (id)
+		) $charset_collate;";
+
+		require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+		dbDelta($sql);
 	}
 
 }

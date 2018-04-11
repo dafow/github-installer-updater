@@ -13,7 +13,7 @@
  * @package           GithubInstallerUpdater
  *
  * @wordpress-plugin
- * Plugin Name:       GithubInstallerUpdater
+ * Plugin Name:       Github Installer & Updater
  * Plugin URI:        https://github.com/BBackerry/github-installer-updater
  * Description:       Browse, Install, and Update Wordpress plugins hosted on Github
  * Version:           1.0.0
@@ -43,7 +43,7 @@ define( 'GIU_VERSION', '1.0.0' );
  */
 function activate_giu() {
 	require_once plugin_dir_path( __FILE__ ) . 'includes/class-giu-activator.php';
-	Plugin_Name_Activator::activate();
+	GIU_Activator::activate();
 }
 
 /**
@@ -52,7 +52,7 @@ function activate_giu() {
  */
 function deactivate_giu() {
 	require_once plugin_dir_path( __FILE__ ) . 'includes/class-giu-deactivator.php';
-	Plugin_Name_Deactivator::deactivate();
+	GIU_Deactivator::deactivate();
 }
 
 register_activation_hook( __FILE__, 'activate_giu' );
