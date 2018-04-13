@@ -166,7 +166,7 @@ class GIU_Admin {
 				$github_client = new \Github\Client();
 				$api_res = $github_client->getHttpClient()->get( 'search/repositories?q=' . $_POST['q']
 					. '&page=' . $page . '&per_page=5' );
-				$repos = Github\HttpClient\Message\ResponseMediator::getContent($api_res);
+				$repos = Github\HttpClient\Message\ResponseMediator::getContent( $api_res );
 				set_transient( 'giu-browse-repos', $repos, 60 );
 
 				wp_safe_redirect( 'admin.php?page=giu-browse&q=' . $_POST['q'] . '&p=' . $page );

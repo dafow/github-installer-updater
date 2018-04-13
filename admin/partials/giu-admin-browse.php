@@ -14,15 +14,15 @@
 ?>
 
 <?php
-  $errors_flash = get_transient('giu-errors');
+  $errors_flash = get_transient( 'giu-errors' );
   if ( $errors_flash !== false ): ?>
 <div class="notice notice-error is-dismissible">
   <p>
-    <?= get_transient('giu-errors') ?>
+    <?= get_transient( 'giu-errors' ) ?>
   </p>
   <p>
     <?php
-      var_dump(get_transient('giu-debug'));
+      var_dump( get_transient( 'giu-debug' ) );
     ?>
   </p>
 </div>
@@ -30,7 +30,7 @@
 
 <h1>Browse Github Plugins</h1>
 
-<?php if( current_user_can('install_plugins') ): ?>
+<?php if( current_user_can( 'install_plugins' ) ): ?>
   <p class="giu-browse-help">
     <ul>
       <li>Enter keywords (e.g: gutenberg).</li>
@@ -41,14 +41,14 @@
   <form action="<?= esc_url( admin_url( 'admin-post.php' ) ) ?>" method="POST">
     <input name="q" type="text" required />
     <input type="hidden" name="action" value="browse_plugins" />
-    <?php wp_nonce_field('giu-browse-plugins', '_giunonce') ?>
+    <?php wp_nonce_field( 'giu-browse-plugins', '_giunonce' ) ?>
 
     <input type="submit" name="submit" class="button button-primary" value="Browse Plugins" />
   </form>
 
   <div class="giu-browse-grid">
     <pre>
-      <?= var_dump(get_transient('giu-browse-repos')) ?>
+      <?= var_dump( get_transient( 'giu-browse-repos' ) ) ?>
     </pre>
   </div>
 
@@ -58,7 +58,7 @@
         <input name="q" type="hidden" value="<?= urldecode( $_GET['q'] ) ?>" />
         <input name="p" type="hidden" value="<?= isset( $_GET['p'] ) ? intval( $_GET['p'], 10 ) : 1 ?>" />
         <input type="hidden" name="action" value="browse_plugins" />
-        <?php wp_nonce_field('giu-browse-plugins', '_giunonce') ?>
+        <?php wp_nonce_field( 'giu-browse-plugins', '_giunonce' ) ?>
 
         <input type="submit" name="submit" class="button button-primary" value="Next Page" />
       </form>
