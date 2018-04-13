@@ -90,35 +90,91 @@ class GIU_Admin {
 	* @since	1.0.0
 	*/
 	public function browse_plugins() {
-		if ( isset($_POST['_giunonce']) && wp_verify_nonce($_POST['_giunonce'], 'giu-browse-plugins') ) {
-			if ( isset($_POST['q']) && !empty($_POST['q']) ) {
-				//Load Github API Wrapper
-				//https://github.com/KnpLabs/php-github-api/
-				require_once plugin_dir_path( __FILE__ ) . '../vendor/autoload.php';
+		if ( isset( $_POST['_giunonce'] ) && wp_verify_nonce( $_POST['_giunonce'], 'giu-browse-plugins' ) ) {
+
+			if ( isset( $_POST['q'] ) && !empty( $_POST['q'] ) && !isset( $_POST['p'] ) ) {
+				//Getting a request from Browse button
+
+				//Clear repos transient from possible previous requests
+				delete_transient( 'giu-browse-repos' );
 
 				//Determine keywords structure (query by repo name, URL...)
 				$query = $_POST['q'];
+				$query = sanitize_text_field( $query );
+				$query_original = $query;
 				if ( strpos( $query, 'http://' ) !== false || strpos( $query, 'https://' ) !== false ) {
 					//Parse URL and get Owner/Repo Name
-					$query = sanitize_text_field($query);
 					$query = trim( $query, '\\' ); //Remove possible trailing slash
 					$query = preg_replace( '/^https?:\/\//', '', $query ); //Remove http or https part
 					$query = explode( '/', $query );
-					$owner_name = $query[count($query) - 2];
-					$repo_name = $query[count($query) - 1];
+
+					if ( count( $query ) === 3 ) {
+						$owner_name = $query[1];
+						$repo_name = $query[2];
+					}
+				}
+				elseif ( strpos( $query, '/' ) !== false ) {
+					$query = explode( '/', $query );
+
+					if ( count( $query ) === 2 ) {
+						$owner_name = $query[0];
+						$repo_name = $query[1];
+					}
 				}
 
+				//Load Github API Wrapper
+				//https://github.com/KnpLabs/php-github-api/
+				require_once plugin_dir_path( __FILE__ ) . '../vendor/autoload.php';
 				$github_client = new \Github\Client();
-				$repos = $github_client->api('repo')->show( $owner_name, $repo_name );
-				set_transient( 'repos', $repos, 60 );
+
+				try {
+					//Get repositories by owner/name or keywords and store them in transients to persist after redirection
+					if ( isset( $owner_name ) && isset ( $repo_name ) ) {
+						$repos = $github_client->api( 'repo' )->show( $owner_name, $repo_name );
+						set_transient( 'giu-browse-repos', $repos, 60 );
+					}
+					else {
+						/*$github_client->getHttpClient()->get( 'search/repositories', array(
+							'q'					=>	rawurlencode( $query ),
+							'per_page'	=>	5,
+							'page'			=>	isset( $_POST['results_page'] ) ? filter_var( trim( $_POST['results_page'] ), FILTER_SANITIZE_NUMBER_INT ) + 1 : 1
+						) );*/
+
+						//set_transient( 'repos', $repos, 60 );
+					}
+				}
+				catch (Exception $e) {
+					set_transient( 'giu-errors', $e->getMessage(), 60 );
+				}
+				finally {
+					set_transient( 'giu-debug', $repo_name, 60 );
+
+					if ( isset( $owner_name ) && isset ( $repo_name ) ) {
+						wp_safe_redirect( 'admin.php?page=giu-browse' );
+					}
+					else {
+						wp_safe_redirect( 'admin.php?page=giu-browse&q=' . urlencode( $query_original ) );
+					}
+				}
+			}
+
+			elseif ( isset( $_POST['q'] ) && !empty( $_POST['q'] ) && isset( $_POST['p'] ) && !empty( $_POST['p'] ) ) {
+				//Getting a request from the pagination button
+				$query_original = urldecode( $_POST['q'] );
+				$page = intval( $_POST['p'], 10 ) + 1;
+				wp_safe_redirect( 'admin.php?page=giu-browse&q=' . urlencode( $query_original ) . '&p=' . $page );
+			}
+
+			else {
+				//No params set for correct usage of browsing
+				set_transient( 'giu-errors', 'Invalid Request', 60 );
 				wp_safe_redirect( 'admin.php?page=giu-browse' );
 			}
 		}
 		else {
 			wp_die( 'Invalid nonce', 'Error',
 				array(
-					'response'	=>	403,
-					'back_link'	=>	'admin.php'
+					'response'	=>	403
 				)
 			);
 		}
