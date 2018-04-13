@@ -92,12 +92,11 @@ class GIU_Admin {
 	public function browse_plugins() {
 		if ( isset( $_POST['_giunonce'] ) && wp_verify_nonce( $_POST['_giunonce'], 'giu-browse-plugins' ) ) {
 
+			//Clear repos transient from possible previous requests
+			delete_transient( 'giu-browse-repos' );
+
 			if ( isset( $_POST['q'] ) && !empty( $_POST['q'] ) && !isset( $_POST['p'] ) ) {
 				//Getting a request from Browse button
-
-				//Clear repos transient from possible previous requests
-				delete_transient( 'giu-browse-repos' );
-
 				//Determine keywords structure (query by repo name, URL...)
 				$query = $_POST['q'];
 				$query = sanitize_text_field( $query );
@@ -134,20 +133,19 @@ class GIU_Admin {
 						set_transient( 'giu-browse-repos', $repos, 60 );
 					}
 					else {
-						/*$github_client->getHttpClient()->get( 'search/repositories', array(
-							'q'					=>	rawurlencode( $query ),
-							'per_page'	=>	5,
-							'page'			=>	isset( $_POST['results_page'] ) ? filter_var( trim( $_POST['results_page'] ), FILTER_SANITIZE_NUMBER_INT ) + 1 : 1
-						) );*/
+						//Querying Github Search API (not using php-github-api search api because of broken parameters)
+						$api_res = $github_client->getHttpClient()->get( 'search/repositories?q=' . urlencode( $query )
+							. '&page=1&per_page=5' );
+						$repos = Github\HttpClient\Message\ResponseMediator::getContent($api_res);
 
-						//set_transient( 'repos', $repos, 60 );
+						set_transient( 'giu-browse-repos', $repos, 60 );
 					}
 				}
 				catch (Exception $e) {
 					set_transient( 'giu-errors', $e->getMessage(), 60 );
 				}
 				finally {
-					set_transient( 'giu-debug', $repo_name, 60 );
+					//set_transient( 'giu-debug', $repo_name, 60 );
 
 					if ( isset( $owner_name ) && isset ( $repo_name ) ) {
 						wp_safe_redirect( 'admin.php?page=giu-browse' );
@@ -160,9 +158,18 @@ class GIU_Admin {
 
 			elseif ( isset( $_POST['q'] ) && !empty( $_POST['q'] ) && isset( $_POST['p'] ) && !empty( $_POST['p'] ) ) {
 				//Getting a request from the pagination button
-				$query_original = urldecode( $_POST['q'] );
+				$query = urldecode( $_POST['q'] );
 				$page = intval( $_POST['p'], 10 ) + 1;
-				wp_safe_redirect( 'admin.php?page=giu-browse&q=' . urlencode( $query_original ) . '&p=' . $page );
+
+				//Querying Github Search API
+				require_once plugin_dir_path( __FILE__ ) . '../vendor/autoload.php';
+				$github_client = new \Github\Client();
+				$api_res = $github_client->getHttpClient()->get( 'search/repositories?q=' . $_POST['q']
+					. '&page=' . $page . '&per_page=5' );
+				$repos = Github\HttpClient\Message\ResponseMediator::getContent($api_res);
+				set_transient( 'giu-browse-repos', $repos, 60 );
+
+				wp_safe_redirect( 'admin.php?page=giu-browse&q=' . $_POST['q'] . '&p=' . $page );
 			}
 
 			else {

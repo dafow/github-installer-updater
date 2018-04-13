@@ -12,23 +12,31 @@
  * @subpackage GithubInstallerUpdater/admin/partials
  */
 ?>
+
+<?php
+  $errors_flash = get_transient('giu-errors');
+  if ( $errors_flash !== false ): ?>
 <div class="notice notice-error is-dismissible">
   <p>
     <?= get_transient('giu-errors') ?>
   </p>
   <p>
     <?php
-      //var_dump(get_transient('giu-debug'));
+      var_dump(get_transient('giu-debug'));
     ?>
   </p>
 </div>
+<?php endif; ?>
 
 <h1>Browse Github Plugins</h1>
 
 <?php if( current_user_can('install_plugins') ): ?>
   <p class="giu-browse-help">
-    Enter a repository name (e.g: gutenberg), or the owner's name followed by a forward slash and the repository's name (e.g: WordPress/gutenberg).<br />
-    You can also directly enter a repository's URL (e.g: https://github.com/Wordpress/gutenberg).
+    <ul>
+      <li>Enter keywords (e.g: gutenberg).</li>
+      <li>Enter the owner's name followed by a forward slash and the repository's name (e.g: WordPress/gutenberg).</li>
+      <li>Enter a repository's URL (e.g: https://github.com/Wordpress/gutenberg).</li>
+    </ul>
   </p>
   <form action="<?= esc_url( admin_url( 'admin-post.php' ) ) ?>" method="POST">
     <input name="q" type="text" required />
@@ -40,7 +48,7 @@
 
   <div class="giu-browse-grid">
     <pre>
-      <?= print_r(get_transient('giu-browse-repos')) ?>
+      <?= var_dump(get_transient('giu-browse-repos')) ?>
     </pre>
   </div>
 
