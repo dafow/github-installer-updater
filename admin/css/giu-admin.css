@@ -1,4 +1,41 @@
-/**
- * All of the CSS for your admin-specific functionality should be
- * included in this file.
- */
+.giu-browse-plugins-grid {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.giu-browse-plugins-grid .giu-browse-plugin {
+  width: 50%;
+  margin-top: 20px;
+}
+
+.giu-browse-plugins-grid .giu-browse-plugin h2 {
+  display: inline-block;
+}
+
+.giu-browse-plugins-grid .giu-browse-plugin .giu-browse-plugin-meta {
+  display: flex;
+}
+
+.giu-browse-plugins-grid .giu-browse-plugin .giu-browse-plugin-desc {
+  margin-bottom: 10px;
+  padding-right: 100px;
+}
+
+.giu-browse-plugins-grid .giu-browse-plugin .giu-browse-plugin-meta div:not(:last-child) {
+  margin-right: 20px;
+}
+
+.giu-browse-plugins-grid .giu-browse-plugin .button {
+  margin-top: 10px;
+}
+
+@media screen and (max-width: 640px) {
+  .giu-browse-plugins-grid .giu-browse-plugin {
+    width: 100%;
+  }
+
+  .giu-browse-plugins-grid .giu-browse-plugin .giu-browse-plugin-desc {
+    padding-right: 20px;
+  }
+}

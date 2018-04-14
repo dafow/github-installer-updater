@@ -1,10 +1,7 @@
 <?php
 
 /**
- * Provide a admin area view for the plugin
- *
- * This file is used to markup the admin-facing aspects of the plugin.
- *
+ * Provide the browsing view for the plugin
  * @link       https://github.com/BBackerry/github-installer-updater
  * @since      1.0.0
  *
@@ -19,11 +16,6 @@
 <div class="notice notice-error is-dismissible">
   <p>
     <?= get_transient( 'giu-errors' ) ?>
-  </p>
-  <p>
-    <?php
-      var_dump( get_transient( 'giu-debug' ) );
-    ?>
   </p>
 </div>
 <?php endif; ?>
@@ -47,12 +39,26 @@
   </form>
 
   <div class="giu-browse-grid">
-    <pre>
-      <?= var_dump( get_transient( 'giu-browse-repos' ) ) ?>
-    </pre>
+    <?php
+      $repos = get_transient( 'giu-browse-repos' );
+      if ( $repos !== false ):
+    ?>
+      <div class="giu-browse-plugins-grid">
+        <?php if ( isset( $repos['total_count'] ) ): ?>
+          <?php foreach ( $repos['items'] as $repo ): ?>
+            <?php include plugin_dir_path( __FILE__ ) . 'giu-browse-plugin.php'; ?>
+          <?php endforeach; ?>
+        <?php else: ?>
+          <?php
+            $repo = $repos;
+            include plugin_dir_path( __FILE__ ) . 'giu-browse-plugin.php';
+          ?>
+        <?php endif; ?>
+      </div>
+    <?php endif; ?>
   </div>
 
-  <?php if ( isset( $_GET['q'] ) && !empty( $_GET['q'] ) ): ?>
+  <?php if ( isset( $_GET['q'] ) && !empty( $_GET['q'] ) && $repos['items'] > 0 ): ?>
     <div class="giu-browse-pagination">
       <form action="<?= esc_url( admin_url( 'admin-post.php' ) ) ?>" method="POST">
         <input name="q" type="hidden" value="<?= urldecode( $_GET['q'] ) ?>" />

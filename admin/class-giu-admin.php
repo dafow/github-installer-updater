@@ -41,6 +41,15 @@ class GIU_Admin {
 	private $version;
 
 	/**
+	 * The number of repositories fetched at each request to the Github API
+	 *
+	 * @since    1.0.0
+	 * @access   private
+	 * @var      int    $per_page    The number of repositories fetched from the Github API
+	 */
+	private $per_page;
+
+	/**
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
@@ -51,6 +60,7 @@ class GIU_Admin {
 
 		$this->giu = $giu;
 		$this->version = $version;
+		$this->per_page = 6;
 
 	}
 
@@ -135,7 +145,7 @@ class GIU_Admin {
 					else {
 						//Querying Github Search API (not using php-github-api search api because of broken parameters)
 						$api_res = $github_client->getHttpClient()->get( 'search/repositories?q=' . urlencode( $query )
-							. '&page=1&per_page=5' );
+							. '&page=1&per_page=' . $this->per_page );
 						$repos = Github\HttpClient\Message\ResponseMediator::getContent($api_res);
 
 						set_transient( 'giu-browse-repos', $repos, 60 );
@@ -145,8 +155,6 @@ class GIU_Admin {
 					set_transient( 'giu-errors', $e->getMessage(), 60 );
 				}
 				finally {
-					//set_transient( 'giu-debug', $repo_name, 60 );
-
 					if ( isset( $owner_name ) && isset ( $repo_name ) ) {
 						wp_safe_redirect( 'admin.php?page=giu-browse' );
 					}
@@ -165,7 +173,7 @@ class GIU_Admin {
 				require_once plugin_dir_path( __FILE__ ) . '../vendor/autoload.php';
 				$github_client = new \Github\Client();
 				$api_res = $github_client->getHttpClient()->get( 'search/repositories?q=' . $_POST['q']
-					. '&page=' . $page . '&per_page=5' );
+					. '&page=' . $page . '&per_page=' . $this->per_page );
 				$repos = Github\HttpClient\Message\ResponseMediator::getContent( $api_res );
 				set_transient( 'giu-browse-repos', $repos, 60 );
 
