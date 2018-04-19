@@ -100,10 +100,10 @@ class GIU_Admin {
 	* @since	1.0.0
 	*/
 	public function browse_plugins() {
-		if ( isset( $_POST['_giunonce'] ) && wp_verify_nonce( $_POST['_giunonce'], 'giu-browse-plugins' ) ) {
+		//Clear repos transient from possible previous requests
+		delete_transient( 'giu-browse-repos' );
 
-			//Clear repos transient from possible previous requests
-			delete_transient( 'giu-browse-repos' );
+		if ( current_user_can( 'install_plugins' ) && isset( $_POST['_giunonce'] ) && wp_verify_nonce( $_POST['_giunonce'], 'giu-browse-plugins' ) ) {
 
 			if ( isset( $_POST['q'] ) && !empty( $_POST['q'] ) && !isset( $_POST['p'] ) ) {
 				//Getting a request from Browse button
@@ -196,6 +196,61 @@ class GIU_Admin {
 	}
 
 	/**
+	* Get repository information to populate download/installation data
+	*
+	* @since	1.0.0
+	*/
+	public function get_repo_install_info() {
+		if ( current_user_can( 'install_plugins' ) && isset( $_POST['_guiAjaxNonce'] ) && wp_verify_nonce( $_POST['_guiAjaxNonce'], 'giu-ajax-actions' ) ) {
+
+			if ( isset( $_POST['repo'] ) && !empty( $_POST['repo'] ) &&
+					isset( $_POST['installChoice'] ) && !empty( $_POST['installChoice'] ) ) {
+				$repo_name = $_POST['repo'];
+				$repo = explode( '/', $repo_name );
+				if ( count ( $repo ) === 2 ) {
+					$repo_owner = sanitize_text_field( $repo[0] );
+					$repo_name = sanitize_text_field( $repo[1] );
+					$install_choice = sanitize_text_field( $_POST['installChoice'] );
+
+					require_once plugin_dir_path( __FILE__ ) . '../vendor/autoload.php';
+					$github_client = new \Github\Client();
+
+					if ( $install_choice === 'master-last-commit' ) {
+
+					}
+					elseif ( $install_choice === 'release' ) {
+						//Get releases. Note: only published releases and releases not associated with tags are returned
+						//https://developer.github.com/v3/repos/releases
+						$releases = $github_client->api( 'repo' )->releases()->all( $repo_owner, $repo_name );
+						error_log(print_r($releases, true));
+						if ( is_array( $releases ) && count( $releases ) > 0 ) {
+							//Load HTML partial and populate with results
+							ob_start();
+							include plugin_dir_path( __FILE__ ) . 'partials/giu-install-plugin-modal-releases.php';
+							echo ob_get_clean();
+						}
+						else {
+							$error_msg = "No releases found from this repository.<br />";
+							$error_msg .= "Note that only published releases and releases not associated with tags are returned";
+							$error_msg .= " (due to how the Gihub API works).";
+							echo $error_msg;
+						}
+					}
+					elseif ( $install_choice === 'tag' ) {
+						$tags = $github_client->api( 'repo' )->tags( $repo_owner, $repo_name );
+						error_log(print_r($releases, true));
+					}
+
+					wp_die();
+				}
+			}
+
+		}
+
+		wp_send_json_error();
+	}
+
+	/**
 	 * Register the stylesheets for the admin area.
 	 *
 	 * @since    1.0.0
@@ -203,7 +258,7 @@ class GIU_Admin {
 	public function enqueue_styles() {
 
 		wp_enqueue_style( $this->giu, plugin_dir_url( __FILE__ ) . 'css/giu-admin.css', array(), $this->version, 'all' );
-
+		wp_enqueue_style( 'fancybox', plugin_dir_url( __FILE__ ) . 'css/jquery.fancybox.min.css', array(), '3.3.5', 'all' );
 	}
 
 	/**
@@ -214,6 +269,9 @@ class GIU_Admin {
 	public function enqueue_scripts() {
 
 		wp_enqueue_script( $this->giu, plugin_dir_url( __FILE__ ) . 'js/giu-admin.js', array( 'jquery' ), $this->version, false );
+		wp_enqueue_script( 'fancybox', plugin_dir_url( __FILE__ ) . 'js/jquery.fancybox.min.js', array( 'jquery' ), '3.3.5', false );
+
+		wp_localize_script( $this->giu, 'giu_ajaxnonce', wp_create_nonce( 'giu-ajax-actions' ) );
 
 	}
 

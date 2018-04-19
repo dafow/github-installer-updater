@@ -25,5 +25,5 @@
     <div class="language">Language: <?= $repo['language'] ?></div>
   </div>
 
-  <input type="submit" class="button button-primary" value="Install Plugin" data-repo-url="#" />
+  <input type="submit" class="button button-primary giu-install-plugin" value="Install Plugin" data-repo-name="<?= $repo['full_name'] ?>" />
 </div>

@@ -161,6 +161,9 @@ class GIU {
 		//Add forms handlers
 		$this->loader->add_action( 'admin_post_browse_plugins', $plugin_admin, 'browse_plugins' );
 
+		//Add AJAX actions handlers
+		$this->loader->add_action( 'wp_ajax_get_repo_install_info', $plugin_admin, 'get_repo_install_info' );
+
 	}
 
 	/**

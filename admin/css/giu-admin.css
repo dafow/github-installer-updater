@@ -1,3 +1,6 @@
+/*
+=================================== Browsing Grid ===================================
+*/
 .giu-browse-plugins-grid {
   display: flex;
   flex-direction: row;
@@ -30,6 +33,10 @@
   margin-top: 10px;
 }
 
+.giu-browse-grid .giu-browse-pagination {
+  margin-top: 50px;
+}
+
 @media screen and (max-width: 640px) {
   .giu-browse-plugins-grid .giu-browse-plugin {
     width: 100%;
@@ -38,4 +45,30 @@
   .giu-browse-plugins-grid .giu-browse-plugin .giu-browse-plugin-desc {
     padding-right: 20px;
   }
+}
+
+/*
+=================================== Browsing Installation Modal ===================================
+*/
+#giu-install-plugin-modal {
+  display: none;
+}
+
+#giu-install-plugin-modal .modal-content-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+#giu-install-plugin-modal .modal-content-container .install-choice .button {
+  margin-top: 10px;
+}
+
+#giu-install-plugin-modal .modal-content-container .install-info {
+  margin: 0 20px;
+  cursor: default;
+}
+
+#giu-install-plugin-modal .modal-content-container .install-info select {
+  cursor: initial;
 }

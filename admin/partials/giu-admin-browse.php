@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Provide the browsing view for the plugin
+ * Provide the browsing view for the plugin grid
  * @link       https://github.com/BBackerry/github-installer-updater
  * @since      1.0.0
  *
@@ -55,21 +55,23 @@
           ?>
         <?php endif; ?>
       </div>
+
+      <?php if ( isset( $_GET['q'] ) && !empty( $_GET['q'] ) && $repos['items'] > 0 ): ?>
+        <div class="giu-browse-pagination">
+          <form action="<?= esc_url( admin_url( 'admin-post.php' ) ) ?>" method="POST">
+            <input name="q" type="hidden" value="<?= urldecode( $_GET['q'] ) ?>" />
+            <input name="p" type="hidden" value="<?= isset( $_GET['p'] ) ? intval( $_GET['p'], 10 ) : 1 ?>" />
+            <input type="hidden" name="action" value="browse_plugins" />
+            <?php wp_nonce_field( 'giu-browse-plugins', '_giunonce' ) ?>
+
+            <input type="submit" name="submit" class="button button-primary" value="Next Page" />
+          </form>
+        </div>
+      <?php endif; ?>
+
+      <?php include plugin_dir_path( __FILE__ ) . 'giu-install-plugin-modal.php'; ?>
     <?php endif; ?>
   </div>
-
-  <?php if ( isset( $_GET['q'] ) && !empty( $_GET['q'] ) && $repos['items'] > 0 ): ?>
-    <div class="giu-browse-pagination">
-      <form action="<?= esc_url( admin_url( 'admin-post.php' ) ) ?>" method="POST">
-        <input name="q" type="hidden" value="<?= urldecode( $_GET['q'] ) ?>" />
-        <input name="p" type="hidden" value="<?= isset( $_GET['p'] ) ? intval( $_GET['p'], 10 ) : 1 ?>" />
-        <input type="hidden" name="action" value="browse_plugins" />
-        <?php wp_nonce_field( 'giu-browse-plugins', '_giunonce' ) ?>
-
-        <input type="submit" name="submit" class="button button-primary" value="Next Page" />
-      </form>
-    </div>
-  <?php endif; ?>
 <?php else: ?>
   <p>You are not authorized to perform this action.</p>
 <?php endif; ?>
