@@ -30,14 +30,14 @@
         <label for="tag">Get the plugin files from a release by tag name</label>
       </div>
 
-      <input id="giu-install-plugin-choice" type="submit" class="button button-primary" value="View Available Installation Options" data-repo-name="" />
+      <input type="submit" class="button button-primary install-choices" value="View Available Installation Options" data-repo-name="" />
     </div>
 
     <div class="install-info">
 
     </div>
 
-    <div class="install-confirmation">
+    <div class="install-result">
 
     </div>
 

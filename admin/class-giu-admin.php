@@ -8,16 +8,6 @@
  *
  * @package    GithubInstallerUpdater
  * @subpackage GithubInstallerUpdater/admin
- */
-
-/**
- * The admin-specific functionality of the plugin.
- *
- * Defines the plugin name, version, and two examples hooks for how to
- * enqueue the admin-specific stylesheet and JavaScript.
- *
- * @package    GithubInstallerUpdater
- * @subpackage GithubInstallerUpdater/admin
  * @author     Falah Salim <falah.salim@gmail.com>
  */
 class GIU_Admin {
@@ -201,7 +191,8 @@ class GIU_Admin {
 	* @since	1.0.0
 	*/
 	public function get_repo_install_info() {
-		if ( current_user_can( 'install_plugins' ) && isset( $_POST['_guiAjaxNonce'] ) && wp_verify_nonce( $_POST['_guiAjaxNonce'], 'giu-ajax-actions' ) ) {
+		if ( current_user_can( 'install_plugins' ) &&
+				isset( $_POST['_guiAjaxNonce'] ) && wp_verify_nonce( $_POST['_guiAjaxNonce'], 'giu-ajax-actions' ) ) {
 
 			if ( isset( $_POST['repo'] ) && !empty( $_POST['repo'] ) &&
 					isset( $_POST['installChoice'] ) && !empty( $_POST['installChoice'] ) ) {
@@ -222,7 +213,7 @@ class GIU_Admin {
 						//Get releases. Note: only published releases and releases not associated with tags are returned
 						//https://developer.github.com/v3/repos/releases
 						$releases = $github_client->api( 'repo' )->releases()->all( $repo_owner, $repo_name );
-						error_log(print_r($releases, true));
+
 						if ( is_array( $releases ) && count( $releases ) > 0 ) {
 							//Load HTML partial and populate with results
 							ob_start();
@@ -238,16 +229,58 @@ class GIU_Admin {
 					}
 					elseif ( $install_choice === 'tag' ) {
 						$tags = $github_client->api( 'repo' )->tags( $repo_owner, $repo_name );
-						error_log(print_r($releases, true));
+						error_log(print_r($tags[0], true));
 					}
-
-					wp_die();
 				}
 			}
 
 		}
 
-		wp_send_json_error();
+		wp_die();
+	}
+
+	/**
+	 * Handle AJAX event from plugin installation action
+	 *
+	 * @since    1.0.0
+	 */
+	public function install_plugin() {
+		if ( current_user_can( 'install_plugins' ) &&
+				isset( $_POST['_guiAjaxNonce'] ) && wp_verify_nonce( $_POST['_guiAjaxNonce'], 'giu-ajax-actions' ) ) {
+
+			if ( isset( $_POST['repoZipball'] ) && !empty( $_POST['repoZipball'] ) &&
+					isset( $_POST['repoName'] ) && !empty( $_POST['repoName'] ) &&
+					isset( $_POST['repoSource'] ) && !empty( $_POST['repoSource'] ) &&
+					isset( $_POST['repoVersion'] ) && !empty( $_POST['repoVersion'] ) ) {
+						$zipball_url = sanitize_text_field( $_POST['repoZipball'] );
+						$repo_name = sanitize_text_field( $_POST['repoName'] );
+						$repo_name = str_replace( '/', '-', $repo_name );
+						$repo_source = sanitize_text_field( $_POST['repoSource'] );
+						$repo_version = sanitize_text_field( $_POST['repoVersion'] );
+
+						require_once plugin_dir_path( __FILE__ ) . 'class-giu-installer.php';
+						$installer = new GIU_Installer;
+						$install_result = $installer->install_repo_archive( $zipball_url );
+						//$install_result = $this->install_repo_archive( $zipball_url, $repo_name );
+						if ( is_bool( $install_result ) ) {
+							$result = array(
+								'success'	=>	true,
+								'message'	=>	"Installation Successful ! Don't forget to activate your plugin."
+							);
+						}
+						else {
+							$result = array(
+								'success'	=>	false,
+								'message'	=>	$install_result
+							);
+						}
+
+						header( 'Content-Type: application/json; charset=' . get_option( 'blog_charset' ) );
+						echo wp_json_encode( $result );
+					}
+		}
+
+		wp_die();
 	}
 
 	/**

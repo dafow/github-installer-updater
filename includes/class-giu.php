@@ -163,6 +163,7 @@ class GIU {
 
 		//Add AJAX actions handlers
 		$this->loader->add_action( 'wp_ajax_get_repo_install_info', $plugin_admin, 'get_repo_install_info' );
+		$this->loader->add_action( 'wp_ajax_install_plugin', $plugin_admin, 'install_plugin' );
 
 	}
 
