@@ -61,8 +61,7 @@ class GIU {
 	 * Define the core functionality of the plugin.
 	 *
 	 * Set the plugin name and the plugin version that can be used throughout the plugin.
-	 * Load the dependencies, define the locale, and set the hooks for the admin area and
-	 * the public-facing side of the site.
+	 * Load the dependencies, define the locale, and set the hooks for the admin area
 	 *
 	 * @since    1.0.0
 	 */
@@ -77,7 +76,6 @@ class GIU {
 		$this->load_dependencies();
 		$this->set_locale();
 		$this->define_admin_hooks();
-		$this->define_public_hooks();
 
 	}
 
@@ -89,7 +87,6 @@ class GIU {
 	 * - Plugin_Name_Loader. Orchestrates the hooks of the plugin.
 	 * - Plugin_Name_i18n. Defines internationalization functionality.
 	 * - Plugin_Name_Admin. Defines all hooks for the admin area.
-	 * - Plugin_Name_Public. Defines all hooks for the public side of the site.
 	 *
 	 * Create an instance of the loader which will be used to register the hooks
 	 * with WordPress.
@@ -115,12 +112,6 @@ class GIU {
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-giu-admin.php';
-
-		/**
-		 * The class responsible for defining all actions that occur in the public-facing
-		 * side of the site.
-		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-giu-public.php';
 
 		$this->loader = new GIU_Loader();
 
@@ -164,22 +155,6 @@ class GIU {
 		//Add AJAX actions handlers
 		$this->loader->add_action( 'wp_ajax_get_repo_install_info', $plugin_admin, 'get_repo_install_info' );
 		$this->loader->add_action( 'wp_ajax_install_plugin', $plugin_admin, 'install_plugin' );
-
-	}
-
-	/**
-	 * Register all of the hooks related to the public-facing functionality
-	 * of the plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 */
-	private function define_public_hooks() {
-
-		$plugin_public = new GIU_Public( $this->get_giu(), $this->get_version() );
-
-		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
-		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
 
 	}
 
