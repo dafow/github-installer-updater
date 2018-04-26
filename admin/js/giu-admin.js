@@ -32,7 +32,7 @@
 			let repoName = e.currentTarget.getAttribute('data-repo-name');
 			let installChoice = document.querySelector('.install-choice input[name="install-choice"]:checked');
 			if (!repoName || !installChoice) { return; }
-			
+
 			let installInfoDiv = document.querySelector("#giu-install-plugin-modal .install-info");
 			showLoading(installInfoDiv);
 
@@ -95,6 +95,13 @@
 				installResultDiv.innerHTML = '<h3>'+response.message+'</h3>';
 			});
 		});
+	});
+
+	//Notify user that selecting last commit option will directly install plugin
+	$(document).on('change', '#giu-install-plugin-modal .install-choice input[name="install-choice"]', function() {
+		let actionBtn = document.querySelector('#giu-install-plugin-modal .install-choices');
+		if (this.value === 'master-last-commit') { actionBtn.value = "Install plugin"; }
+		else { actionBtn.value = "View Available Installation Options"; }
 	});
 
 	function showLoading(el) {
