@@ -194,9 +194,9 @@ class GIU_Admin {
 		if ( current_user_can( 'install_plugins' ) &&
 				isset( $_POST['_guiAjaxNonce'] ) && wp_verify_nonce( $_POST['_guiAjaxNonce'], 'giu-ajax-actions' ) ) {
 
-			if ( isset( $_POST['repo'] ) && !empty( $_POST['repo'] ) &&
+			if ( isset( $_POST['repoName'] ) && !empty( $_POST['repoName'] ) &&
 					isset( $_POST['installChoice'] ) && !empty( $_POST['installChoice'] ) ) {
-				$repo_name = $_POST['repo'];
+				$repo_name = $_POST['repoName'];
 				$repo = explode( '/', $repo_name );
 				if ( count ( $repo ) === 2 ) {
 					$repo_owner = sanitize_text_field( $repo[0] );
@@ -256,38 +256,73 @@ class GIU_Admin {
 	 */
 	public function install_plugin() {
 		if ( current_user_can( 'install_plugins' ) &&
-				isset( $_POST['_guiAjaxNonce'] ) && wp_verify_nonce( $_POST['_guiAjaxNonce'], 'giu-ajax-actions' ) ) {
+		isset( $_POST['_guiAjaxNonce'] ) && wp_verify_nonce( $_POST['_guiAjaxNonce'], 'giu-ajax-actions' ) ) {
 
 			if ( isset( $_POST['repoZipball'] ) && !empty( $_POST['repoZipball'] ) &&
-					isset( $_POST['repoName'] ) && !empty( $_POST['repoName'] ) &&
-					isset( $_POST['repoSource'] ) && !empty( $_POST['repoSource'] ) &&
-					isset( $_POST['repoVersion'] ) && !empty( $_POST['repoVersion'] ) ) {
-						$zipball_url = sanitize_text_field( $_POST['repoZipball'] );
-						$repo_name = sanitize_text_field( $_POST['repoName'] );
-						$repo_name = str_replace( '/', '-', $repo_name );
-						$repo_source = sanitize_text_field( $_POST['repoSource'] );
-						$repo_version = sanitize_text_field( $_POST['repoVersion'] );
+			isset( $_POST['repoName'] ) && !empty( $_POST['repoName'] ) &&
+			isset( $_POST['repoSource'] ) && !empty( $_POST['repoSource'] ) &&
+			isset( $_POST['repoVersion'] ) && !empty( $_POST['repoVersion'] ) ) {
 
-						require_once plugin_dir_path( __FILE__ ) . 'class-giu-installer.php';
-						$installer = new GIU_Installer;
-						$install_result = $installer->install_repo_archive( $zipball_url );
+				$zipball_url = sanitize_text_field( $_POST['repoZipball'] );
+				$repo_name = sanitize_text_field( $_POST['repoName'] );
+				$repo_name = str_replace( '/', '-', $repo_name );
+				$repo_source = sanitize_text_field( $_POST['repoSource'] );
+				$repo_version = sanitize_text_field( $_POST['repoVersion'] );
 
-						if ( is_bool( $install_result ) ) {
-							$result = array(
-								'success'	=>	true,
-								'message'	=>	"Installation Successful ! Don't forget to activate your plugin."
-							);
-						}
-						else {
-							$result = array(
-								'success'	=>	false,
-								'message'	=>	$install_result
-							);
-						}
+				require_once plugin_dir_path( __FILE__ ) . 'class-giu-installer.php';
+				$installer = new GIU_Installer;
+				$install_result = $installer->install_repo_archive( $zipball_url );
 
-						header( 'Content-Type: application/json; charset=' . get_option( 'blog_charset' ) );
-						echo wp_json_encode( $result );
-					}
+				if ( is_bool( $install_result ) ) {
+					$result = array(
+						'success'	=>	true,
+						'message'	=>	"Installation Successful ! Don't forget to activate your plugin."
+					);
+				}
+				else {
+					$result = array(
+						'success'	=>	false,
+						'message'	=>	$install_result
+					);
+				}
+
+				header( 'Content-Type: application/json; charset=' . get_option( 'blog_charset' ) );
+				echo wp_json_encode( $result );
+			}
+
+			elseif ( isset( $_POST['repoName'] ) && !empty( $_POST['repoName'] ) &&
+			isset( $_POST['installChoice'] ) && !empty( $_POST['installChoice'] ) ) {
+				error_log("ok");
+				$repo_name = $_POST['repoName'];
+				$repo = explode( '/', $repo_name );
+				if ( count ( $repo ) === 2 ) {
+					$repo_owner = sanitize_text_field( $repo[0] );
+					$repo_name = sanitize_text_field( $repo[1] );
+					$install_choice = sanitize_text_field( $_POST['installChoice'] );
+				}
+
+				$zipball_url = "https://api.github.com/repos/{$repo_owner}/{$repo_name}/zipball/master";
+
+				require_once plugin_dir_path( __FILE__ ) . 'class-giu-installer.php';
+				$installer = new GIU_Installer;
+				$install_result = $installer->install_repo_archive( $zipball_url );
+
+				if ( is_bool( $install_result ) ) {
+					$result = array(
+						'success'	=>	true,
+						'message'	=>	"Installation Successful ! Don't forget to activate your plugin."
+					);
+				}
+				else {
+					$result = array(
+						'success'	=>	false,
+						'message'	=>	$install_result
+					);
+				}
+
+				header( 'Content-Type: application/json; charset=' . get_option( 'blog_charset' ) );
+				echo wp_json_encode( $result );
+			}
 		}
 
 		wp_die();

@@ -32,19 +32,39 @@
 			let repoName = e.currentTarget.getAttribute('data-repo-name');
 			let installChoice = document.querySelector('.install-choice input[name="install-choice"]:checked');
 			if (!repoName || !installChoice) { return; }
+			
+			let installInfoDiv = document.querySelector("#giu-install-plugin-modal .install-info");
+			showLoading(installInfoDiv);
 
 			//Get Repository download option info
 			//AJAX nonce is available through wp_localize_script
-			let repoData = {
-				action:					'get_repo_install_info',
-				repo:						repoName,
-				installChoice:	installChoice.value,
-				_guiAjaxNonce:	giu_ajaxnonce
-			};
-			$.post(ajaxurl, repoData, function(response) {
-				//Populate view with results
-				document.querySelector("#giu-install-plugin-modal .install-info").innerHTML = response;
-			});
+
+			//If download from master is selected, go directly to installation step
+			if (installChoice.value === 'master-last-commit') {
+				let repoData = {
+					action:					'install_plugin',
+					repoName:				repoName,
+					installChoice:	installChoice.value,
+					_guiAjaxNonce:	giu_ajaxnonce
+				};
+				$.post(ajaxurl, repoData, function(response) {
+					//Populate view with results
+					installInfoDiv.innerHTML = '<h3>'+response.message+'</h3>';
+				});
+			}
+			else {
+				//Get installation options
+				let repoData = {
+					action:					'get_repo_install_info',
+					repoName:				repoName,
+					installChoice:	installChoice.value,
+					_guiAjaxNonce:	giu_ajaxnonce
+				};
+				$.post(ajaxurl, repoData, function(response) {
+					//Populate view with results
+					installInfoDiv.innerHTML = response;
+				});
+			}
 		});
 
 		//Send AJAX action with repository's information to install as a plugin
@@ -58,6 +78,9 @@
 			let repoVersion = selectedOption.getAttribute('data-repo-version');
 			if (!repoZipball || !repoName || !repoSource || !repoVersion) { return; }
 
+			let installResultDiv = document.querySelector("#giu-install-plugin-modal .install-result");
+			showLoading(installResultDiv);
+
 			//Get Repository download option info
 			let repoData = {
 				action:					'install_plugin',
@@ -69,8 +92,12 @@
 			};
 			$.post(ajaxurl, repoData, function(response) {
 				//Populate view with results
-				document.querySelector("#giu-install-plugin-modal .install-result").innerHTML = '<h3>'+response.message+'</h3>';
+				installResultDiv.innerHTML = '<h3>'+response.message+'</h3>';
 			});
 		});
 	});
+
+	function showLoading(el) {
+		el.innerHTML = '<div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>';
+	}
 })(jQuery);
