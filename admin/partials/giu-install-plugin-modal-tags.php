@@ -13,10 +13,10 @@
 <h3>Select a tag name to get the plugin's archive from:</h3>
 <select>
   <?php foreach ( $tags as $tag ): ?>
-    <option value="<?= $release['zipball_url'] ?>" data-repo-name="<?= $repo_owner . '/' . $repo_name ?>" data-repo-source="release" data-repo-ver="<?= $release['id'] ?>">
-      <?= !empty( $release['name'] ) ? $release['name'] : $release['tag_name'] ?>
+    <option data-repo-zipball="<?= $tag['zipball_url'] ?>" data-repo-name="<?= $repo_owner . '/' . $repo_name ?>" data-repo-source="tag" data-repo-version="<?= $tag['name'] ?>">
+      <?= !empty( $tag['name'] ) ? $tag['name'] : $tag['tag_name'] ?>
     </option>
   <?php endforeach; ?>
 </select>
 
-<input type="submit" name="submit" class="button button-primary" value="Next Page" />
+<input type="submit" name="submit" class="button button-primary install-plugin" value="Install as a plugin" />

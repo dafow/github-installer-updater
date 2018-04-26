@@ -56,21 +56,13 @@
 
 #giu-install-plugin-modal .modal-content-container {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   flex-wrap: wrap;
   cursor: default;
 }
 
 #giu-install-plugin-modal .modal-content-container .install-choice .button {
   margin-top: 10px;
-}
-
-#giu-install-plugin-modal .modal-content-container .install-choice {
-  flex-basis: 50%;
-}
-
-#giu-install-plugin-modal .modal-content-container .install-info {
-  flex-basis: 50%;
 }
 
 #giu-install-plugin-modal .modal-content-container .install-result {

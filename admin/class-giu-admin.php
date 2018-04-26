@@ -214,7 +214,7 @@ class GIU_Admin {
 						//https://developer.github.com/v3/repos/releases
 						$releases = $github_client->api( 'repo' )->releases()->all( $repo_owner, $repo_name );
 
-						if ( is_array( $releases ) && count( $releases ) > 0 ) {
+						if ( is_array( $releases ) && !empty( $releases ) ) {
 							//Load HTML partial and populate with results
 							ob_start();
 							include plugin_dir_path( __FILE__ ) . 'partials/giu-install-plugin-modal-releases.php';
@@ -229,7 +229,17 @@ class GIU_Admin {
 					}
 					elseif ( $install_choice === 'tag' ) {
 						$tags = $github_client->api( 'repo' )->tags( $repo_owner, $repo_name );
-						error_log(print_r($tags[0], true));
+
+						if ( is_array( $tags ) && !empty( $tags ) ) {
+							//Load HTML partial and populate with results
+							ob_start();
+							include plugin_dir_path( __FILE__ ) . 'partials/giu-install-plugin-modal-tags.php';
+							echo ob_get_clean();
+						}
+						else {
+							$error_msg = "No tags found from this repository.<br />";
+							echo $error_msg;
+						}
 					}
 				}
 			}
@@ -261,7 +271,7 @@ class GIU_Admin {
 						require_once plugin_dir_path( __FILE__ ) . 'class-giu-installer.php';
 						$installer = new GIU_Installer;
 						$install_result = $installer->install_repo_archive( $zipball_url );
-						//$install_result = $this->install_repo_archive( $zipball_url, $repo_name );
+
 						if ( is_bool( $install_result ) ) {
 							$result = array(
 								'success'	=>	true,
