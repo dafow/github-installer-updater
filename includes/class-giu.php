@@ -149,6 +149,9 @@ class GIU {
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 		$this->loader->add_action( 'admin_menu', $plugin_admin, 'add_nav_menu' );
 
+		//Add Settings API hooks to setup global settings page
+		$this->loader->add_action( 'admin_init', $plugin_admin, 'setup_settings' );
+		
 		//Add forms handlers
 		$this->loader->add_action( 'admin_post_browse_plugins', $plugin_admin, 'browse_plugins' );
 

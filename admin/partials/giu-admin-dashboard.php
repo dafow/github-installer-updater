@@ -13,6 +13,26 @@
  */
 ?>
 
-<div>
-  
+<div class="wrap">
+<?php
+  $errors_flash = get_transient( 'giu-errors' );
+  if ( $errors_flash !== false ): ?>
+<div class="notice notice-error is-dismissible">
+  <p>
+    <?= get_transient( 'giu-errors' ) ?>
+  </p>
+</div>
+<?php endif; ?>
+
+<h1>Global Settings</h1>
+
+<?php if( current_user_can( 'install_plugins' ) ): ?>
+  <form action="<?= esc_url( admin_url( 'options.php' ) ) ?>" method="POST">
+    <?php settings_fields('giu-settings'); ?>
+    <?php do_settings_sections('giu'); ?>
+    <?php submit_button(); ?>
+  </form>
+<?php else: ?>
+  <p>You are not authorized to perform this action.</p>
+<?php endif; ?>
 </div>

@@ -85,6 +85,43 @@ class GIU_Admin {
 	}
 
 	/**
+	* Add a settings page using the Options API
+	*
+	* @since	1.0.0
+	*/
+	public function setup_settings() {
+		//TODO: Move to separate class
+		//Add a settings section for authentication fields
+		register_setting( 'giu-settings', 'giu-settings-auth' );
+
+		add_settings_section( 'giu-auth-section', 'Rate Limits', array( $this, 'output_auth_settings' ), 'giu' );
+		add_settings_field( 'giu-auth-username-field', 'Username', array( $this, 'output_auth_username_field' ),
+			'giu', 'giu-auth-section' );
+		add_settings_field( 'giu-auth-password-field', 'Password', array( $this, 'output_auth_password_field' ),
+			'giu', 'giu-auth-section' );
+	}
+
+	public function output_auth_settings() {
+		echo '<p>Github Authentication Info</p>';
+	}
+
+	public function output_auth_username_field() {
+		$settings = (array) get_option( 'giu-settings-auth' );
+		$field = 'username';
+		$value = isset( $settings[$field] ) ? esc_attr( $settings[$field] ) : '';
+
+		echo "<input type='text' name='giu-settings-auth[$field]' value='$value' />";
+	}
+
+	public function output_auth_password_field() {
+		$settings = (array) get_option( 'giu-settings-auth' );
+		$field = 'password';
+		$value = isset( $settings[$field] ) ? esc_attr( $settings[$field] ) : '';
+
+		echo "<input type='password' name='giu-settings-auth[$field]' value='$value' />";
+	}
+
+	/**
 	* Handle form action for browsing plugins
 	*
 	* @since	1.0.0

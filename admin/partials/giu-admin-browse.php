@@ -10,6 +10,7 @@
  */
 ?>
 
+<div class="wrap">
 <?php
   $errors_flash = get_transient( 'giu-errors' );
   if ( $errors_flash !== false ): ?>
@@ -75,3 +76,4 @@
 <?php else: ?>
   <p>You are not authorized to perform this action.</p>
 <?php endif; ?>
+</div>
