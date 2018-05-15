@@ -206,10 +206,7 @@ class GIU_Admin {
 					require_once plugin_dir_path( __FILE__ ) . '../vendor/autoload.php';
 					$github_client = new \Github\Client();
 
-					if ( $install_choice === 'master-last-commit' ) {
-
-					}
-					elseif ( $install_choice === 'release' ) {
+					if ( $install_choice === 'release' ) {
 						//Get releases. Note: only published releases and releases not associated with tags are returned
 						//https://developer.github.com/v3/repos/releases
 						$releases = $github_client->api( 'repo' )->releases()->all( $repo_owner, $repo_name );
@@ -292,7 +289,6 @@ class GIU_Admin {
 
 			elseif ( isset( $_POST['repoName'] ) && !empty( $_POST['repoName'] ) &&
 			isset( $_POST['installChoice'] ) && !empty( $_POST['installChoice'] ) ) {
-				error_log("ok");
 				$repo_name = $_POST['repoName'];
 				$repo = explode( '/', $repo_name );
 				if ( count ( $repo ) === 2 ) {
