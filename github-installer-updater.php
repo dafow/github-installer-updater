@@ -37,15 +37,6 @@ if ( ! defined( 'WPINC' ) ) {
 define( 'GIU_VERSION', '1.0.0' );
 
 /**
- * The code that runs during plugin activation.
- * This action is documented in includes/class-giu-activator.php
- */
-function activate_giu() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-giu-activator.php';
-	GIU_Activator::activate();
-}
-
-/**
  * The code that runs during plugin deactivation.
  * This action is documented in includes/class-giu-deactivator.php
  */
@@ -54,7 +45,6 @@ function deactivate_giu() {
 	GIU_Deactivator::deactivate();
 }
 
-register_activation_hook( __FILE__, 'activate_giu' );
 register_deactivation_hook( __FILE__, 'deactivate_giu' );
 
 /**
