@@ -64,6 +64,9 @@ class GIU_Admin {
 			array($this, 'output_admin_page') );
 		add_submenu_page( 'giu', 'Browse Plugins', 'Browse Plugins', 'install_plugins', 'giu-browse',
 			array($this, 'output_browse_page') );
+		add_submenu_page( 'giu', 'Settings', 'Settings', 'install_plugins', 'giu-settings',
+			array($this, 'output_admin_page') );
+		remove_submenu_page( 'giu', 'giu' );
 	}
 
 	/**
