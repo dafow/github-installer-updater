@@ -95,14 +95,25 @@ class GIU_Admin {
 		register_setting( 'giu-settings', 'giu-settings-auth' );
 
 		add_settings_section( 'giu-auth-section', 'Rate Limits', array( $this, 'output_auth_settings' ), 'giu' );
+		add_settings_field( 'giu-auth-enable-field', 'Authenticate with Github Account', array( $this, 'output_auth_enable_field' ),
+			'giu', 'giu-auth-section' );
 		add_settings_field( 'giu-auth-username-field', 'Username', array( $this, 'output_auth_username_field' ),
 			'giu', 'giu-auth-section' );
-		add_settings_field( 'giu-auth-password-field', 'Password', array( $this, 'output_auth_password_field' ),
+		add_settings_field( 'giu-auth-token-field', 'API Token', array( $this, 'output_auth_token_field' ),
 			'giu', 'giu-auth-section' );
 	}
 
 	public function output_auth_settings() {
-		echo '<p>Github Authentication Info</p>';
+		require plugin_dir_path( __FILE__ ) . 'partials/giu-admin-dashboard-settings.php';
+	}
+
+	public function output_auth_enable_field() {
+		$settings = (array) get_option( 'giu-settings-auth' );
+		$field = 'enable';
+		$value = isset( $settings[$field] ) ? esc_attr( $settings[$field] ) : '';
+
+		echo "<input type='checkbox' name='giu-settings-auth[$field]' value='1'" . checked( $value, 1, false ) . " />";
+
 	}
 
 	public function output_auth_username_field() {
@@ -113,9 +124,9 @@ class GIU_Admin {
 		echo "<input type='text' name='giu-settings-auth[$field]' value='$value' />";
 	}
 
-	public function output_auth_password_field() {
+	public function output_auth_token_field() {
 		$settings = (array) get_option( 'giu-settings-auth' );
-		$field = 'password';
+		$field = 'token';
 		$value = isset( $settings[$field] ) ? esc_attr( $settings[$field] ) : '';
 
 		echo "<input type='password' name='giu-settings-auth[$field]' value='$value' />";
