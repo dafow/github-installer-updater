@@ -1,5 +1,5 @@
 <?php
-
+use \Exception as Exception;
 /**
  * The admin-specific functionality of the plugin.
  *
@@ -50,7 +50,7 @@ class GIU_Admin {
 
 		$this->giu = $giu;
 		$this->version = $version;
-		$this->per_page = 6;
+		$this->per_page = 10;
 
 	}
 
@@ -72,6 +72,7 @@ class GIU_Admin {
 	* @since	1.0.0
 	*/
 	public function output_admin_page() {
+		delete_transient( 'giu-errors' );
 		require plugin_dir_path( __FILE__ ) . 'partials/giu-admin-dashboard.php';
 	}
 
@@ -90,7 +91,7 @@ class GIU_Admin {
 	* @since	1.0.0
 	*/
 	public function setup_settings() {
-		//TODO: Move to separate class
+		//TODO: Move this and view files to separate class/partials
 		//Add a settings section for authentication fields
 		register_setting( 'giu-settings', 'giu-settings-auth' );
 
@@ -140,8 +141,12 @@ class GIU_Admin {
 	public function browse_plugins() {
 		//Clear repos transient from possible previous requests
 		delete_transient( 'giu-browse-repos' );
+		delete_transient( 'giu-errors' );
 
 		if ( current_user_can( 'install_plugins' ) && isset( $_POST['_giunonce'] ) && wp_verify_nonce( $_POST['_giunonce'], 'giu-browse-plugins' ) ) {
+
+			//Get auth settings and check later if WP user wants to auth with Github token
+			$auth_settings = (array) get_option( 'giu-settings-auth' );
 
 			if ( isset( $_POST['q'] ) && !empty( $_POST['q'] ) && !isset( $_POST['p'] ) ) {
 				//Getting a request from Browse button
@@ -149,6 +154,7 @@ class GIU_Admin {
 				$query = $_POST['q'];
 				$query = sanitize_text_field( $query );
 				$query_original = $query;
+
 				if ( strpos( $query, 'http://' ) !== false || strpos( $query, 'https://' ) !== false ) {
 					//Parse URL and get Owner/Repo Name
 					$query = trim( $query, '\\' ); //Remove possible trailing slash
@@ -169,16 +175,20 @@ class GIU_Admin {
 					}
 				}
 
-				//Load Github API Wrapper
-				//https://github.com/KnpLabs/php-github-api/
-				require_once plugin_dir_path( __FILE__ ) . '../vendor/autoload.php';
-				$github_client = new \Github\Client();
-
 				try {
-					//Get repositories by owner/name or keywords and store them in transients to persist after redirection
+					//Load Github API Wrapper
+					//https://github.com/KnpLabs/php-github-api/
+					require_once plugin_dir_path( __FILE__ ) . '../vendor/autoload.php';
+					$github_client = new \Github\Client();
+					if ( isset( $auth_settings['enable'] ) ) {
+						$github_client->authenticate( $auth_settings['token'], null, \Github\Client::AUTH_HTTP_TOKEN );
+					}
+
 					if ( isset( $owner_name ) && isset ( $repo_name ) ) {
 						$repos = $github_client->api( 'repo' )->show( $owner_name, $repo_name );
 						set_transient( 'giu-browse-repos', $repos, 60 );
+
+						wp_safe_redirect( 'admin.php?page=giu-browse' );
 					}
 					else {
 						//Querying Github Search API (not using php-github-api search api because of broken parameters)
@@ -187,18 +197,12 @@ class GIU_Admin {
 						$repos = Github\HttpClient\Message\ResponseMediator::getContent($api_res);
 
 						set_transient( 'giu-browse-repos', $repos, 60 );
+						wp_safe_redirect( 'admin.php?page=giu-browse&q=' . urlencode( $query_original ) );
 					}
 				}
 				catch (Exception $e) {
 					set_transient( 'giu-errors', $e->getMessage(), 60 );
-				}
-				finally {
-					if ( isset( $owner_name ) && isset ( $repo_name ) ) {
-						wp_safe_redirect( 'admin.php?page=giu-browse' );
-					}
-					else {
-						wp_safe_redirect( 'admin.php?page=giu-browse&q=' . urlencode( $query_original ) );
-					}
+					wp_safe_redirect( 'admin.php?page=giu-browse' );
 				}
 			}
 
@@ -207,15 +211,25 @@ class GIU_Admin {
 				$query = urldecode( $_POST['q'] );
 				$page = intval( $_POST['p'], 10 ) + 1;
 
-				//Querying Github Search API
-				require_once plugin_dir_path( __FILE__ ) . '../vendor/autoload.php';
-				$github_client = new \Github\Client();
-				$api_res = $github_client->getHttpClient()->get( 'search/repositories?q=' . $_POST['q']
-					. '&page=' . $page . '&per_page=' . $this->per_page );
-				$repos = Github\HttpClient\Message\ResponseMediator::getContent( $api_res );
-				set_transient( 'giu-browse-repos', $repos, 60 );
+				try {
+					//Querying Github Search API
+					require_once plugin_dir_path( __FILE__ ) . '../vendor/autoload.php';
+					$github_client = new \Github\Client();
+					if ( isset( $auth_settings['enable'] ) ) {
+						$github_client->authenticate( $auth_settings['token'], null, \Github\Client::AUTH_HTTP_TOKEN );
+					}
 
-				wp_safe_redirect( 'admin.php?page=giu-browse&q=' . $_POST['q'] . '&p=' . $page );
+					$api_res = $github_client->getHttpClient()->get( 'search/repositories?q=' . $_POST['q']
+						. '&page=' . $page . '&per_page=' . $this->per_page );
+					$repos = Github\HttpClient\Message\ResponseMediator::getContent( $api_res );
+					set_transient( 'giu-browse-repos', $repos, 60 );
+
+					wp_safe_redirect( 'admin.php?page=giu-browse&q=' . $_POST['q'] . '&p=' . $page );
+				}
+				catch (Exception $e) {
+					set_transient( 'giu-errors', $e->getMessage(), 60 );
+					wp_safe_redirect( 'admin.php?page=giu-browse' );
+				}
 			}
 
 			else {
